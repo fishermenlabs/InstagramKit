@@ -70,6 +70,12 @@
         NSDictionary *info = [[NSBundle bundleForClass:[self class]] infoDictionary];
         self.appClientID = info[kInstagramAppClientIdConfigurationKey];
         self.appRedirectURL = info[kInstagramAppRedirectURLConfigurationKey];
+        
+        NSString *authenticationType = @"token";
+        if (info[kInstagramAppAuthenticationTypeConfigurationKey]){
+            authenticationType = info[kInstagramAppAuthenticationTypeConfigurationKey];
+        }
+        self.appAuthenticationType = authenticationType;
 
         self.backgroundQueue = dispatch_queue_create("instagramkit.response.queue", NULL);
         
@@ -110,14 +116,14 @@
 - (BOOL)receivedValidAccessTokenFromURL:(NSURL *)url
                                   error:(NSError *__autoreleasing *)error
 {
-    NSURL *appRedirectURL = [NSURL URLWithString:self.appRedirectURL];
-    if (![appRedirectURL.scheme isEqual:url.scheme] || ![appRedirectURL.host isEqual:url.host])
-    {
+    
+    if ([self isValidRedirectURL:url] == NO) {
         return NO;
     }
-    
+
     BOOL success = YES;
     NSString *token = [self queryStringParametersFromString:url.fragment][@"access_token"];
+
     if (token)
     {
         self.accessToken = token;
@@ -131,6 +137,45 @@
         success = NO;
     }
     return success;
+}
+
+- (BOOL)receivedAccessCodeFromURL:(NSURL *)url
+                      error:(NSError *__autoreleasing *)error
+{
+    
+    if ([self isValidRedirectURL:url] == NO)
+    {
+        return NO;
+    }
+    
+    BOOL success = YES;
+    NSString *code = [self queryStringParametersFromString:url.query][@"code"];
+    
+    if (code)
+    {
+        self.accessCode = code;
+    }
+    else
+    {
+        NSString *localizedDescription = NSLocalizedString(@"Authorization not granted.", @"Error notification to indicate Instagram OAuth token was not provided.");
+        *error = [NSError errorWithDomain:InstagtamKitErrorDomain
+                                     code:InstagramKitAuthenticationFailedError
+                                 userInfo:@{NSLocalizedDescriptionKey: localizedDescription}];
+        success = NO;
+    }
+    return success;
+}
+
+- (BOOL)isValidRedirectURL:(NSURL *)url{
+    
+    NSURL *appRedirectURL = [NSURL URLWithString:self.appRedirectURL];
+    if (![appRedirectURL.scheme isEqual:url.scheme] || ![appRedirectURL.host isEqual:url.host])
+    {
+        return NO;
+    }
+    
+    return YES;
+    
 }
 
 
@@ -174,11 +219,10 @@
     NSString *scopeString = [self stringForScope:scope];
     NSDictionary *parameters = @{ @"client_id": self.appClientID,
                                   @"redirect_uri": self.appRedirectURL,
-                                  @"response_type": @"token",
+                                  @"response_type": self.appAuthenticationType,
                                   @"scope": scopeString };
     return parameters;
 }
-
 
 - (NSString *)stringForScope:(InstagramKitLoginScope)scope
 {

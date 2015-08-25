@@ -58,6 +58,10 @@ INSTAGRAMKIT_EXTERN NSString *const kInstagramAppClientIdConfigurationKey;
  */
 INSTAGRAMKIT_EXTERN NSString *const kInstagramAppRedirectURLConfigurationKey;
 
+/**
+ *  Configuration Key for the Authentication Type of your App, either 'token' for local authentication or 'code' for server-based.
+ */
+INSTAGRAMKIT_EXTERN NSString *const kInstagramAppAuthenticationTypeConfigurationKey;
 
 /*!
  @typedef   InstagrmaKitLoginScope enum
