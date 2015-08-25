@@ -41,10 +41,21 @@
 @property (nonatomic, copy) NSString *appRedirectURL;
 
 /**
+ *  Authentication type of your App, defaults to 'token'.
+ */
+@property (nonatomic, copy) NSString *appAuthenticationType;
+
+/**
  *  The oauth token stored in the account store credential, if available.
  *  If not empty, this implies user has granted access.
  */
 @property (nonatomic, strong) NSString *accessToken;
+
+/**
+ *  The oauth code returned from Instagram to be verified by your own server.
+ *  If not empty, custom code to interact with your server should fetch the token using it.
+ */
+@property (nonatomic, strong) NSString *accessCode;
 
 
 #pragma mark - Authentication -
@@ -70,7 +81,7 @@
 
 
 /**
- *  A convenience method to extract and save the access code from an URL received in
+ *  A convenience method to extract and save the access token from an URL received in
  *  UIWebView's delegate method - webView: shouldStartLoadWithRequest: navigationType:
  *  @param url   URL from the request object.
  *  @param error Error in extracting token, if any.
@@ -79,6 +90,24 @@
  */
 - (BOOL)receivedValidAccessTokenFromURL:(NSURL *)url
                                   error:(NSError *__autoreleasing *)error;
+
+/**
+ *  A convenience method to extract and save the access code from an redirect URL
+ *  received from Instagram's 'code' authorization:
+ *  @param url   URL from the request object.
+ *  @param error Error in extracting token, if any.
+ *
+ *  @return YES if valid code extracted and saved, otherwise NO.
+ */
+- (BOOL)receivedAccessCodeFromURL:(NSURL *)url
+                            error:(NSError *__autoreleasing *)error;
+
+/**
+ *  Validate if supplied redirect url matches the defined scheme.
+ *
+ *  @return YES if redirect url is valid, otherwise NO.
+ */
+- (BOOL)isValidRedirectURL:(NSURL *)url;
 
 /**
  *  Validate if authorization is done.
