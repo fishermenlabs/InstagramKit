@@ -158,7 +158,7 @@
     else
     {
         NSString *localizedDescription = NSLocalizedString(@"Authorization not granted.", @"Error notification to indicate Instagram OAuth token was not provided.");
-        *error = [NSError errorWithDomain:InstagtamKitErrorDomain
+        *error = [NSError errorWithDomain:InstagramKitErrorDomain
                                      code:InstagramKitAuthenticationFailedError
                                  userInfo:@{NSLocalizedDescriptionKey: localizedDescription}];
         success = NO;
